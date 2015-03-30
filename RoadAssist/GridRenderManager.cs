@@ -89,8 +89,9 @@ namespace RoadAssist
             if (renderGrid)
             {
                 TerrainPatch patch = TerrainManager.instance.m_patches[40];
+                RenderGridDeco(cameraInfo, patch);
                 //RenderPatchGrid(cameraInfo, patch);
-                RenderGridManual(cameraInfo, patch.m_bounds.center, gridSize);
+                //RenderGridManual(cameraInfo, patch.m_bounds.center, gridSize);
             }
         }
 
@@ -194,6 +195,23 @@ namespace RoadAssist
             }
         }
 
+        private void RenderGridDeco(RenderManager.CameraInfo cameraInfo, TerrainPatch patch)
+        {
+            if (cameraInfo.Intersect(patch.m_bounds))
+            {
+
+                Bounds bounds = patch.m_bounds;
+                Material deco = Singleton<GameAreaManager>.instance.m_properties.m_decorationMaterial;
+
+                //Material zoneMaterial = Singleton<ZoneManager>.instance.m_zoneMaterial;
+
+                deco.SetVector(Shader.PropertyToID("_DecorationArea"), new Vector4(-bounds.size.x / 2, -bounds.size.x / 2, 16, 16));
+                deco.SetFloat(Shader.PropertyToID("_DecorationAlpha"), 1.0f);
+
+                RenderManager.instance.OverlayEffect.DrawEffect(cameraInfo, deco, 0, bounds);
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -244,6 +262,62 @@ namespace RoadAssist
             }
         }
 
+        /*
+        // Hardcore manual methods
+        private void DrawEffect(RenderManager.CameraInfo cameraInfo, Material material, int pass, Bounds bounds)
+        {
+            if (bounds.Intersects(cameraInfo.m_nearBounds))
+            {
+                if (material.SetPass(pass))
+                {
+                    Matrix4x4 matrix = default(Matrix4x4);
+                    matrix.SetTRS(cameraInfo.m_position + cameraInfo.m_forward * (cameraInfo.m_near + 1f), cameraInfo.m_rotation, new Vector3(100f, 100f, 1f));
+                    Graphics.DrawMeshNow(this.m_boxMesh, matrix);
+                }
+            }
+            else if (material.SetPass(pass))
+            {
+                Matrix4x4 matrix2 = default(Matrix4x4);
+                matrix2.SetTRS(bounds.center, rotation, bounds.size);
+                Graphics.DrawMeshNow(this.m_boxMesh, matrix2);
+            }
+        }
 
+        private void CreateBoxMesh()
+        {
+            Vector3[] array = new Vector3[8];
+            int[] triangles = new int[36];
+            int num = 0;
+            int num2 = 0;
+            array[num++] = new Vector3(-0.5f, -0.5f, -0.5f);
+            array[num++] = new Vector3(0.5f, -0.5f, -0.5f);
+            array[num++] = new Vector3(-0.5f, 0.5f, -0.5f);
+            array[num++] = new Vector3(0.5f, 0.5f, -0.5f);
+            array[num++] = new Vector3(-0.5f, -0.5f, 0.5f);
+            array[num++] = new Vector3(0.5f, -0.5f, 0.5f);
+            array[num++] = new Vector3(-0.5f, 0.5f, 0.5f);
+            array[num++] = new Vector3(0.5f, 0.5f, 0.5f);
+            CreateQuad(triangles, ref num2, 0, 2, 3, 1);
+            CreateQuad(triangles, ref num2, 4, 5, 7, 6);
+            CreateQuad(triangles, ref num2, 2, 6, 7, 3);
+            CreateQuad(triangles, ref num2, 0, 1, 5, 4);
+            CreateQuad(triangles, ref num2, 4, 6, 2, 0);
+            CreateQuad(triangles, ref num2, 5, 1, 3, 7);
+            this.m_boxMesh = new Mesh();
+            this.m_boxMesh.hideFlags = HideFlags.DontSave;
+            this.m_boxMesh.vertices = array;
+            this.m_boxMesh.triangles = triangles;
+        }
+
+        private void CreateQuad(int[] triangles, ref int index, int a, int b, int c, int d)
+        {
+            triangles[index++] = a;
+            triangles[index++] = b;
+            triangles[index++] = d;
+            triangles[index++] = d;
+            triangles[index++] = b;
+            triangles[index++] = c;
+        }
+        */
     }
 }
