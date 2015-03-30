@@ -11,7 +11,8 @@ namespace RoadAssist
     {
         private UITitlePanel titlePanel;
 
-        private UISliderInput sliderInput;
+        private UISliderInput gridSizeSlider;
+        private UISliderInput gridAngleSlider;
 
         public override void Start()
         {
@@ -20,6 +21,13 @@ namespace RoadAssist
             this.width = 450;
             this.height = 350;
             this.transformPosition = new Vector3(-1.0f, 0.9f);
+
+            
+            // Allow automated layout
+            this.autoLayoutDirection = LayoutDirection.Vertical;
+            this.autoLayoutStart = LayoutStart.TopLeft;
+            this.autoLayoutPadding = new RectOffset(0, 0, 10, 10);
+            //this.autoLayout = true;
 
             SetupControls();
         }
@@ -30,20 +38,28 @@ namespace RoadAssist
             #region "Top Bar"
             titlePanel = AddUIComponent<UITitlePanel>();
             titlePanel.Parent = this;
-
+            titlePanel.relativePosition = Vector3.zero;
             titlePanel.IconSprite = "ToolbarIconRoads";
             titlePanel.TitleText = "Road Assist";
             #endregion
 
             #region "Sliders"
-            sliderInput = AddUIComponent<UISliderInput>();
-            sliderInput.Parent = this;
-            sliderInput.relativePosition = new Vector3(5,100);
+            gridSizeSlider = AddUIComponent<UISliderInput>();
+            gridSizeSlider.Parent = this;
+            gridSizeSlider.relativePosition = new Vector3(0,50);
+            gridSizeSlider.MinValue = 0f;
+            gridSizeSlider.MaxValue = 100f;
+            gridSizeSlider.LabelText = "Grid Size";
+
+            gridAngleSlider = AddUIComponent<UISliderInput>();
+            gridAngleSlider.Parent = this;
+            gridAngleSlider.relativePosition = new Vector3(0, 100);
+            gridAngleSlider.MinValue = 0f;
+            gridAngleSlider.MaxValue = 360f;
+            gridAngleSlider.LabelText = "Grid Angle";
+            
 
             #endregion
-
-
-
 
         }
 
@@ -51,46 +67,5 @@ namespace RoadAssist
         {
             base.OnResolutionChanged(previousResolution, currentResolution);
         }
-
-        #region "Button installation"
-        private UIButton AddNewButton(string buttonText)
-        {
-            UIButton newButton = this.AddUIComponent<UIButton>();
-
-            SetDefaultButton(newButton, buttonText);
-
-            return newButton;
-        }
-
-        private void SetDefaultButton(UIButton button, string buttonText)
-        {
-            button.text = buttonText;
-            button.width = this.width - this.autoLayoutPadding.left * 2;
-            button.height = 25;
-
-            button.normalBgSprite = "ButtonMenu";
-            button.disabledBgSprite = "ButtonMenuDisabled";
-            button.hoveredBgSprite = "ButtonMenuHovered";
-            button.focusedBgSprite = "ButtonMenuFocused";
-            button.pressedBgSprite = "ButtonMenuPressed";
-            button.textColor = new Color32(255, 255, 255, 255);
-            button.disabledTextColor = new Color32(7, 7, 7, 255);
-            button.hoveredTextColor = new Color32(7, 132, 255, 255);
-            button.focusedTextColor = new Color32(255, 255, 255, 255);
-            button.pressedTextColor = new Color32(30, 30, 44, 255);
-        }
-        #endregion
-
-        #region "Button Clicks"
-        private void LabelClick(UIComponent component, UIMouseEventParameter eventParam)
-        {
-            if (eventParam.buttons == UIMouseButton.Left && ChirpPanel.instance != null)
-            {
-                this.Hide();
-            }
-        }
-
-        #endregion
-
     }
 }

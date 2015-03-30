@@ -8,6 +8,13 @@ using UnityEngine;
 namespace RoadAssist
 {
     // Shamelessly ripped from: https://github.com/justacid/Skylines-ExtendedPublicTransport/blob/master/ExtendedPublicTransportUI/UITitleContainer.cs
+
+    /// <summary>
+    /// UIComponent inheriting from UIPanel. Creates top panel with sprite icon, label and close button. Requires the following to be set:
+    /// 
+    /// TitleText - Text to display on bar.
+    /// IconSprite - The sprite icon to be used.
+    /// </summary>
     class UITitlePanel : UIPanel
     {
         private UISprite iconSprite;
@@ -62,7 +69,6 @@ namespace RoadAssist
             }
 
             width = Parent.width;
-            relativePosition = Vector3.zero;
             isVisible = true;
             canFocus = true;
             isInteractive = true;
@@ -75,7 +81,7 @@ namespace RoadAssist
             iconSprite.spriteName = IconSprite;
             iconSprite.relativePosition = new Vector3(5, 5);
 
-            titleLabel.relativePosition = new Vector3(50, 13);
+            titleLabel.relativePosition = new Vector3(200, 13);
             titleLabel.text = TitleText;
 
             closeButton.relativePosition = new Vector3(width - 35, 2);

@@ -7,10 +7,38 @@ using UnityEngine;
 
 namespace RoadAssist
 {
+    /// <summary>
+    /// UIComponent inheriting from UIPanel. Creates slider with label and text field. Requires the following to be set:
+    /// 
+    /// LabelText - Text to display above slider.
+    /// MinValue - Min value of slider.
+    /// MaxValue - Max value of slider.
+    /// </summary>
     class UISliderInput : UIPanel
     {
+        private UILabel label;
         private UISlider slider;
         private UITextField textField;
+
+
+
+        public string LabelText
+        {
+            get { return label.text; }
+            set { label.text = value; }
+        }
+
+        public float MinValue
+        {
+            get { return slider.minValue; }
+            set { slider.minValue = value; }
+        }
+
+        public float MaxValue
+        {
+            get { return slider.maxValue; }
+            set { slider.maxValue = value; }
+        }
 
         public float Height
         {
@@ -30,11 +58,40 @@ namespace RoadAssist
         {
             base.Awake();
 
+            label = AddUIComponent<UILabel>();
             slider = AddUIComponent<UISlider>();
             textField = AddUIComponent<UITextField>();
 
             height = 40;
             width = 450;
+
+            this.slider.eventValueChanged += delegate(UIComponent sender, float value)
+            {
+                value = slider.value;
+                textField.text = Mathf.CeilToInt(value).ToString();
+            };
+
+            // Check if the text field changed, and update the slider value.
+            this.textField.eventTextSubmitted += delegate(UIComponent sender, string s)
+            {
+                int num;
+                if (int.TryParse(s, out num))
+                {
+                    if (num > slider.maxValue)
+                    {
+                        textField.text = slider.maxValue.ToString();
+                    }
+                    else if (num < slider.minValue)
+                    {
+                        textField.text = slider.minValue.ToString();
+                    }
+                    slider.value = num;
+                }
+                else
+                {
+                    textField.text = "";
+                }
+            };
         }
         public override void Start()
         {
@@ -47,20 +104,40 @@ namespace RoadAssist
             }
 
             width = Parent.width;
-            relativePosition = Vector3.zero;
             isVisible = true;
             canFocus = true;
             isInteractive = true;
 
+            label.relativePosition = new Vector3(10, 0);
+            label.textScale = 1.0f;
+            label.text = LabelText;
+
             slider.width = width - 150;
-            slider.relativePosition = Vector3.zero;
-            slider.minValue = 0f;
-            slider.maxValue = 100f;
-            slider.value = 50f;
+            slider.height = 15;
+            slider.backgroundSprite = "BudgetSlider";
+            slider.relativePosition = new Vector3(10,20);
+            slider.minValue = MinValue;
+            slider.maxValue = MaxValue;
+            slider.value = (MaxValue - MinValue) / 2;
             
+            UISlicedSprite tracSprite = slider.AddUIComponent<UISlicedSprite>();
+            tracSprite.relativePosition = Vector2.zero;
+            tracSprite.autoSize = true;
+            tracSprite.size = tracSprite.parent.size;
+            tracSprite.fillDirection = UIFillDirection.Horizontal;
+            tracSprite.spriteName = "";
+
+            UISlicedSprite thumbSprite = tracSprite.AddUIComponent<UISlicedSprite>();
+            thumbSprite.relativePosition = Vector2.zero;
+            thumbSprite.fillDirection = UIFillDirection.Vertical;
+            thumbSprite.autoSize = true;
+            thumbSprite.spriteName = "SliderBudget";
+
+            slider.thumbObject = thumbSprite;
+            slider.fillIndicatorObject = tracSprite;            
 
             textField.width = 100;
-            slider.relativePosition = new Vector3(320,0);
+            textField.relativePosition = new Vector3(320, 20);
             textField.normalBgSprite = "TextFieldPanel";
             textField.hoveredBgSprite = "TextFieldPanelHovered";
             textField.focusedBgSprite = "TextFieldUnderline";
