@@ -21,7 +21,9 @@ namespace RoadAssist
         private static float gridSize = 1000f;
 
         private static Quaternion rotation = Quaternion.identity;
+        private static Vector3 gridCenter;
 
+        #region "GetSets"
         public static bool RenderGrid
         {
             get
@@ -70,9 +72,26 @@ namespace RoadAssist
             }
         }
 
+        public static Vector3 GridCenter
+        {
+            get
+            {
+                return gridCenter;
+            }
+            set
+            {
+                gridCenter = value;
+            }
+        }
+        #endregion
+
         public void BeginOverlay(RenderManager.CameraInfo cameraInfo)
         {
-            
+            if (gridCenter == null)
+            {
+                TerrainPatch patch = TerrainManager.instance.m_patches[40];
+                gridCenter = patch.m_bounds.center;
+            }
         }
 
         public void BeginRendering(RenderManager.CameraInfo cameraInfo)
@@ -86,18 +105,19 @@ namespace RoadAssist
 
         public void EndOverlay(RenderManager.CameraInfo cameraInfo)
         {
+            
             if (renderGrid)
             {
-                TerrainPatch patch = TerrainManager.instance.m_patches[40];
-                RenderGridDeco(cameraInfo, patch);
+                
+                //RenderGridDeco(cameraInfo, gridCenter, gridSize, 100f);
                 //RenderPatchGrid(cameraInfo, patch);
-                //RenderGridManual(cameraInfo, patch.m_bounds.center, gridSize);
+                RenderGridManual(cameraInfo, gridCenter, gridSize, 100f);
             }
+
         }
 
         public void EndRendering(RenderManager.CameraInfo cameraInfo)
         {
-
         }
 
         public DrawCallData GetDrawCallData()
@@ -126,24 +146,6 @@ namespace RoadAssist
         {
         }
 
-        private Material GetMaterial(string matName)
-        {
-            Material[] materials = Resources.FindObjectsOfTypeAll<Material>();
-            foreach (Material material in materials)
-            {
-                if (material.name.Equals(matName))
-                {
-                    return material;
-                }
-            }
-            return null;
-        }
-
-        private T GetPrivateVariable<T>(object obj, string fieldName)
-        {
-            return (T)obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(obj);
-        }
-
         /// <summary>
         /// Renders a grid over a given TerrainPatch - covers entire TerrainPatch.
         /// Currently used only for debugging
@@ -152,8 +154,6 @@ namespace RoadAssist
         /// <param name="patch">The TerrainPatch to be rendered over</param>
         private void RenderPatchGrid(RenderManager.CameraInfo cameraInfo, TerrainPatch patch)
         {
-            
-
             if (cameraInfo.Intersect(patch.m_bounds))
             {
                 Bounds bounds = patch.m_bounds;
@@ -195,32 +195,33 @@ namespace RoadAssist
             }
         }
 
-        private void RenderGridDeco(RenderManager.CameraInfo cameraInfo, TerrainPatch patch)
+        private void RenderGridDeco(RenderManager.CameraInfo cameraInfo, Vector3 center, float size, float height)
         {
-            if (cameraInfo.Intersect(patch.m_bounds))
+            Vector3 sizeVec = new Vector3(size, height, size);
+            Bounds gridBounds = new Bounds(center, sizeVec);
+
+            if (cameraInfo.Intersect(gridBounds))
             {
-
-                Bounds bounds = patch.m_bounds;
                 Material deco = Singleton<GameAreaManager>.instance.m_properties.m_decorationMaterial;
+                //Material deco = Singleton<ZoneManager>.instance.m_zoneMaterial;
 
-                //Material zoneMaterial = Singleton<ZoneManager>.instance.m_zoneMaterial;
-
-                deco.SetVector(Shader.PropertyToID("_DecorationArea"), new Vector4(-bounds.size.x / 2, -bounds.size.x / 2, 16, 16));
+                deco.SetVector(Shader.PropertyToID("_DecorationArea"), new Vector4(-size, -size, size, size));
                 deco.SetFloat(Shader.PropertyToID("_DecorationAlpha"), 1.0f);
 
-                RenderManager.instance.OverlayEffect.DrawEffect(cameraInfo, deco, 0, bounds);
+                CustomOverlayEffect.DrawEffect(cameraInfo, deco, 0, gridBounds);
+                //RenderManager.instance.OverlayEffect.DrawEffect(cameraInfo, deco, 0, gridBounds);
             }
         }
 
         /// <summary>
-        /// 
+        /// Manually renders a grid by drawing quads over the defined area.
         /// </summary>
         /// <param name="cameraInfo"></param>
         /// <param name="center"> The center of the grid to be drawn.</param>
         /// <param name="size"> Edge to edge length of grid to be drawn.</param>
-        private void RenderGridManual(RenderManager.CameraInfo cameraInfo, Vector3 center, float size)
+        private void RenderGridManual(RenderManager.CameraInfo cameraInfo, Vector3 center, float size, float height)
         {
-            Vector3 sizeVec = new Vector3(size, size, size);
+            Vector3 sizeVec = new Vector3(size, height, size);
             Bounds gridBounds = new Bounds(center, sizeVec);
 
             if (cameraInfo.Intersect(gridBounds))
@@ -261,63 +262,5 @@ namespace RoadAssist
 
             }
         }
-
-        /*
-        // Hardcore manual methods
-        private void DrawEffect(RenderManager.CameraInfo cameraInfo, Material material, int pass, Bounds bounds)
-        {
-            if (bounds.Intersects(cameraInfo.m_nearBounds))
-            {
-                if (material.SetPass(pass))
-                {
-                    Matrix4x4 matrix = default(Matrix4x4);
-                    matrix.SetTRS(cameraInfo.m_position + cameraInfo.m_forward * (cameraInfo.m_near + 1f), cameraInfo.m_rotation, new Vector3(100f, 100f, 1f));
-                    Graphics.DrawMeshNow(this.m_boxMesh, matrix);
-                }
-            }
-            else if (material.SetPass(pass))
-            {
-                Matrix4x4 matrix2 = default(Matrix4x4);
-                matrix2.SetTRS(bounds.center, rotation, bounds.size);
-                Graphics.DrawMeshNow(this.m_boxMesh, matrix2);
-            }
-        }
-
-        private void CreateBoxMesh()
-        {
-            Vector3[] array = new Vector3[8];
-            int[] triangles = new int[36];
-            int num = 0;
-            int num2 = 0;
-            array[num++] = new Vector3(-0.5f, -0.5f, -0.5f);
-            array[num++] = new Vector3(0.5f, -0.5f, -0.5f);
-            array[num++] = new Vector3(-0.5f, 0.5f, -0.5f);
-            array[num++] = new Vector3(0.5f, 0.5f, -0.5f);
-            array[num++] = new Vector3(-0.5f, -0.5f, 0.5f);
-            array[num++] = new Vector3(0.5f, -0.5f, 0.5f);
-            array[num++] = new Vector3(-0.5f, 0.5f, 0.5f);
-            array[num++] = new Vector3(0.5f, 0.5f, 0.5f);
-            CreateQuad(triangles, ref num2, 0, 2, 3, 1);
-            CreateQuad(triangles, ref num2, 4, 5, 7, 6);
-            CreateQuad(triangles, ref num2, 2, 6, 7, 3);
-            CreateQuad(triangles, ref num2, 0, 1, 5, 4);
-            CreateQuad(triangles, ref num2, 4, 6, 2, 0);
-            CreateQuad(triangles, ref num2, 5, 1, 3, 7);
-            this.m_boxMesh = new Mesh();
-            this.m_boxMesh.hideFlags = HideFlags.DontSave;
-            this.m_boxMesh.vertices = array;
-            this.m_boxMesh.triangles = triangles;
-        }
-
-        private void CreateQuad(int[] triangles, ref int index, int a, int b, int c, int d)
-        {
-            triangles[index++] = a;
-            triangles[index++] = b;
-            triangles[index++] = d;
-            triangles[index++] = d;
-            triangles[index++] = b;
-            triangles[index++] = c;
-        }
-        */
     }
 }
