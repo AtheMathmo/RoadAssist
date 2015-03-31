@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomOverlayEffect.cs" />
     <Compile Include="GridRenderManager.cs" />
     <Compile Include="GridTrigger.cs" />
     <Compile Include="RoadAssistBuildingManager.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="RoadAssistPanel.cs" />
     <Compile Include="UISliderInput.cs" />
     <Compile Include="UITitlePanel.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
