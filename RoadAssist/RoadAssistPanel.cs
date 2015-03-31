@@ -11,8 +11,8 @@ namespace RoadAssist
     {
         private UITitlePanel titlePanel;
 
-        private UISliderInput gridSizeSlider;
-        private UISliderInput gridAngleSlider;
+        private  UISliderInput gridSizeSlider;
+        private  UISliderInput gridAngleSlider;
 
         public override void Start()
         {
@@ -57,8 +57,6 @@ namespace RoadAssist
             gridAngleSlider.MinValue = 0f;
             gridAngleSlider.MaxValue = 360f;
             gridAngleSlider.LabelText = "Grid Angle";
-            
-
             #endregion
 
         }

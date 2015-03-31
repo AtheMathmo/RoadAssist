@@ -41,9 +41,7 @@ namespace RoadAssist
             renderManager = null;
 
             GameObject.Destroy(roadAssistPanelObject);
-            roadAssistPanelObject = null;
-
-            
+            roadAssistPanelObject = null;    
         }
     }
 }

@@ -28,6 +28,12 @@ namespace RoadAssist
             set { label.text = value; }
         }
 
+        public float SliderValue
+        {
+            get { return slider.value; }
+            set { slider.value = value; }
+        }
+
         public float MinValue
         {
             get { return slider.minValue; }
@@ -89,7 +95,7 @@ namespace RoadAssist
                 }
                 else
                 {
-                    textField.text = "";
+                    textField.text = slider.value.ToString();
                 }
             };
         }
