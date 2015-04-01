@@ -57,11 +57,12 @@
     <Compile Include="CustomOverlayEffect.cs" />
     <Compile Include="GridRenderManager.cs" />
     <Compile Include="GridTrigger.cs" />
-    <Compile Include="RoadAssistBuildingManager.cs" />
     <Compile Include="RoadAssistLoader.cs" />
     <Compile Include="RoadAssistMod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RoadAssistPanel.cs" />
+    <Compile Include="UIDoubleButton.cs" />
+    <Compile Include="UILabelledBox.cs" />
     <Compile Include="UISliderInput.cs" />
     <Compile Include="UITitlePanel.cs" />
     <Compile Include="Utils.cs" />

@@ -23,6 +23,10 @@ namespace RoadAssist
         private static Quaternion rotation = Quaternion.identity;
         private static Vector3 gridCenter;
 
+        private static NetNode clampedNode;
+        private static bool isClamped;
+        private static int clampedSegment = 0;
+
         #region "GetSets"
         public static bool RenderGrid
         {
@@ -83,6 +87,43 @@ namespace RoadAssist
                 gridCenter = value;
             }
         }
+
+        public static NetNode ClampedNode
+        {
+            get
+            {
+                return clampedNode;
+            }
+            set
+            {
+                clampedNode = value;
+            }
+        }
+
+
+        public static bool IsClamped
+        {
+            get
+            {
+                return isClamped;
+            }
+            set
+            {
+                isClamped = value;
+            }
+        }
+
+        public static int ClampedSegment
+        {
+            get
+            {
+                return clampedSegment;
+            }
+            set
+            {
+                clampedSegment = value;
+            }
+        }
         #endregion
 
         public void BeginOverlay(RenderManager.CameraInfo cameraInfo)
@@ -92,6 +133,7 @@ namespace RoadAssist
                 TerrainPatch patch = TerrainManager.instance.m_patches[40];
                 gridCenter = patch.m_bounds.center;
             }
+
         }
 
         public void BeginRendering(RenderManager.CameraInfo cameraInfo)
