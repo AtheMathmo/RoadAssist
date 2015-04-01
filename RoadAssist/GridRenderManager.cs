@@ -304,5 +304,19 @@ namespace RoadAssist
 
             }
         }
+
+        public static void SetDefaultStatics()
+        {
+            renderGrid = false;
+            gridSize = 1000f;
+
+            rotation = Quaternion.identity;
+
+            TerrainPatch patch = TerrainManager.instance.m_patches[40];
+            gridCenter = patch.m_bounds.center;
+
+            isClamped = false;
+            clampedSegment = 0;
+        }
     }
 }

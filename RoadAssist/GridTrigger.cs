@@ -55,25 +55,33 @@ namespace RoadAssist
             // J for panel
             if (Event.current.alt && Input.GetKeyDown(KeyCode.J))
             {
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.isVisible = !panel.isVisible;
             }
 
             // H to remove buildings
             if (Event.current.alt && Input.GetKeyDown(KeyCode.H))
             {
-                Debug.Log("[RoadAssist] Alt+H pressed.");
                 renderBuildings = !renderBuildings;
                 Utils.SetBuildingRender(renderBuildings);
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.ShowBuildingsBox.CheckBox.isChecked = renderBuildings;
+            }
+
+            if (Event.current.alt && Input.GetKeyDown(KeyCode.F))
+            {
+                renderFog = !renderFog;
+                Utils.SetFogRender(renderFog);
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
+                panel.ShowFogBox.CheckBox.isChecked = renderFog;
+
             }
 
             // Z for zones
             if (Event.current.alt && Input.GetKeyDown(KeyCode.Z))
             {
                 TerrainManager.instance.RenderZones = !TerrainManager.instance.RenderZones;
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.ShowZonesBox.CheckBox.isChecked = TerrainManager.instance.RenderZones;
             }
 
@@ -82,7 +90,7 @@ namespace RoadAssist
             {
                 Debug.Log("[RoadAssist] Alt+G pressed. Render is " + (!GridRenderManager.RenderGrid ? "on" : "off"));
                 GridRenderManager.RenderGrid = !GridRenderManager.RenderGrid;
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.ShowGridBox.CheckBox.isChecked = GridRenderManager.RenderGrid;
             }
             #endregion
@@ -118,7 +126,7 @@ namespace RoadAssist
                         GridRenderManager.IsClamped = true;
                         GridRenderManager.GridCenter = node.m_position;
 
-                        RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                        RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                         panel.ClampNodeBox.CheckBox.isChecked = true;
                         panel.SegmentButtons.LeftButton.Enable();
                         panel.SegmentButtons.RightButton.Enable();
@@ -133,7 +141,7 @@ namespace RoadAssist
             {
                 angleRot = (angleRot + 1f) % 360;
 
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.GridAngleSlider.Slider.value = angleRot;
 
                 GridRenderManager.Rotation = Quaternion.AngleAxis(angleRot, new Vector3(0, 1, 0));
@@ -149,7 +157,7 @@ namespace RoadAssist
                     angleRot = 360f + angleRot;
                 }
 
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                 panel.GridAngleSlider.Slider.value = angleRot;
 
                 GridRenderManager.Rotation = Quaternion.AngleAxis(angleRot, new Vector3(0, 1, 0));
@@ -197,9 +205,9 @@ namespace RoadAssist
                 {
                     GridRenderManager.GridSize = 2000f;
                 }
-                
 
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
 
                 panel.GridSizeSlider.Slider.value = GridRenderManager.GridSize;
             }
@@ -212,7 +220,7 @@ namespace RoadAssist
                     GridRenderManager.GridSize = 0;
                 }
 
-                RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
 
                 panel.GridSizeSlider.Slider.value = GridRenderManager.GridSize;
 
@@ -227,7 +235,7 @@ namespace RoadAssist
                 {
                     GridRenderManager.IsClamped = false;
                     GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                     panel.ClampNodeBox.CheckBox.isChecked = false;
                     panel.SegmentButtons.LeftButton.Disable();
                     panel.SegmentButtons.RightButton.Disable();
@@ -246,7 +254,7 @@ namespace RoadAssist
                 {
                     GridRenderManager.IsClamped = false;
                     GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                     panel.ClampNodeBox.CheckBox.isChecked = false;
                     panel.SegmentButtons.LeftButton.Disable();
                     panel.SegmentButtons.RightButton.Disable();
@@ -265,7 +273,7 @@ namespace RoadAssist
                 {
                     GridRenderManager.IsClamped = false;
                     GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                     panel.ClampNodeBox.CheckBox.isChecked = false;
                     panel.SegmentButtons.LeftButton.Disable();
                     panel.SegmentButtons.RightButton.Disable();
@@ -284,7 +292,7 @@ namespace RoadAssist
                 {
                     GridRenderManager.IsClamped = false;
                     GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = Singleton<RoadAssistPanel>.instance;
+                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                     panel.ClampNodeBox.CheckBox.isChecked = false;
                     panel.SegmentButtons.LeftButton.Disable();
                     panel.SegmentButtons.RightButton.Disable();
