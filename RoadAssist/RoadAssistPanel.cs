@@ -37,9 +37,9 @@ namespace RoadAssist
             get { return showGridBox; }
         }
 
-        public UILabelledBox ShowZonesBox
+        public UILabelledBox ShowFogBox
         {
-            get { return showZonesBox; }
+            get { return showFogBox; }
         }
 
         public UILabelledBox ShowBuildingsBox
@@ -47,6 +47,10 @@ namespace RoadAssist
             get { return showBuildingsBox; }
         }
 
+        public UILabelledBox ShowZonesBox
+                {
+                    get { return showZonesBox; }
+                }
         public UILabelledBox ClampNodeBox
         {
             get { return clampNodeBox; }
@@ -149,7 +153,7 @@ namespace RoadAssist
             this.backgroundSprite = "MenuPanel2";
             this.width = 450;
             this.height = 350;
-            this.transformPosition = new Vector3(-1.0f, 0.9f);
+            this.transformPosition = new Vector3(-1.3f, 0.9f);
 
             SetupControls();
         }
@@ -171,12 +175,13 @@ namespace RoadAssist
             gridSizeSlider.MaxValue = 2000f;
             gridSizeSlider.StepSize = 10f;
             gridSizeSlider.LabelText = "Grid Size";
+            gridSizeSlider.SliderValue = 1000f;
  
             gridAngleSlider.Parent = this;
             gridAngleSlider.relativePosition = new Vector3(0, 100);
             gridAngleSlider.MinValue = 0f;
             gridAngleSlider.MaxValue = 360f;
-            gridAngleSlider.Slider.value = 0f;
+            gridAngleSlider.SliderValue = 0f;
             gridAngleSlider.LabelText = "Grid Angle";
             #endregion
 

@@ -37,11 +37,14 @@ namespace RoadAssist
 
         public override void OnLevelUnloading()
         {
+            GridRenderManager.SetDefaultStatics();
+            TerrainManager.instance.RenderZones = false;
             RenderManagers.Remove(renderManager);
             renderManager = null;
 
             GameObject.Destroy(roadAssistPanelObject);
-            roadAssistPanelObject = null;    
+            roadAssistPanelObject = null;
+
         }
     }
 }

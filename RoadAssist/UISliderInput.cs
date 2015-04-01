@@ -45,6 +45,12 @@ namespace RoadAssist
             set { slider.maxValue = value; }
         }
 
+        public float SliderValue
+        {
+            get { return slider.value; }
+            set { slider.value = value; }
+        }
+
         public float StepSize
         {
             get { return slider.stepSize; }
@@ -131,7 +137,7 @@ namespace RoadAssist
             slider.relativePosition = new Vector3(10,20);
             slider.minValue = MinValue;
             slider.maxValue = MaxValue;
-            slider.value = (MaxValue - MinValue) / 2;
+            slider.value = SliderValue;
             
             UISlicedSprite tracSprite = slider.AddUIComponent<UISlicedSprite>();
             tracSprite.relativePosition = Vector2.zero;
