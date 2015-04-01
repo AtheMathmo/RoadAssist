@@ -15,7 +15,7 @@ namespace RoadAssist
     /// TitleText - Text to display on bar.
     /// IconSprite - The sprite icon to be used.
     /// </summary>
-    class UITitlePanel : UIPanel
+    public class UITitlePanel : UIPanel
     {
         private UISprite iconSprite;
         private UILabel titleLabel;
@@ -79,9 +79,10 @@ namespace RoadAssist
             dragHandle.target = Parent;
 
             iconSprite.spriteName = IconSprite;
-            iconSprite.relativePosition = new Vector3(5, 5);
+            iconSprite.size = new Vector2(40,40);
+            iconSprite.relativePosition = new Vector3(0, 0);
 
-            titleLabel.relativePosition = new Vector3(200, 13);
+            titleLabel.relativePosition = new Vector3(180, 13);
             titleLabel.text = TitleText;
 
             closeButton.relativePosition = new Vector3(width - 35, 2);

@@ -14,7 +14,7 @@ namespace RoadAssist
     /// MinValue - Min value of slider.
     /// MaxValue - Max value of slider.
     /// </summary>
-    class UISliderInput : UIPanel
+    public class UISliderInput : UIPanel
     {
         private UILabel label;
         private UISlider slider;
@@ -28,10 +28,9 @@ namespace RoadAssist
             set { label.text = value; }
         }
 
-        public float SliderValue
+        public UISlider Slider
         {
-            get { return slider.value; }
-            set { slider.value = value; }
+            get { return slider; }
         }
 
         public float MinValue
@@ -44,6 +43,12 @@ namespace RoadAssist
         {
             get { return slider.maxValue; }
             set { slider.maxValue = value; }
+        }
+
+        public float StepSize
+        {
+            get { return slider.stepSize; }
+            set { slider.stepSize = value; }
         }
 
         public float Height
@@ -68,12 +73,14 @@ namespace RoadAssist
             slider = AddUIComponent<UISlider>();
             textField = AddUIComponent<UITextField>();
 
+            LabelText = "(None)";
+
             height = 40;
             width = 450;
 
             this.slider.eventValueChanged += delegate(UIComponent sender, float value)
             {
-                value = slider.value;
+                //value = slider.value;
                 textField.text = Mathf.CeilToInt(value).ToString();
             };
 

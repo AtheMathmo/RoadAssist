@@ -11,9 +11,138 @@ namespace RoadAssist
     {
         private UITitlePanel titlePanel;
 
-        private  UISliderInput gridSizeSlider;
-        private  UISliderInput gridAngleSlider;
+        private UISliderInput gridSizeSlider;
+        private UISliderInput gridAngleSlider;
 
+        private UILabelledBox showGridBox;
+        private UILabelledBox showFogBox;
+        private UILabelledBox showBuildingsBox;
+        private UILabelledBox showZonesBox;
+        private UILabelledBox clampNodeBox;
+        private UIDoubleButton segmentButtons;
+
+        #region "Component access"
+        public UISliderInput GridSizeSlider
+        {
+            get { return gridSizeSlider; }
+        }
+
+        public UISliderInput GridAngleSlider
+        {
+            get { return gridAngleSlider; }
+        }
+
+        public UILabelledBox ShowGridBox
+        {
+            get { return showGridBox; }
+        }
+
+        public UILabelledBox ShowZonesBox
+        {
+            get { return showZonesBox; }
+        }
+
+        public UILabelledBox ShowBuildingsBox
+        {
+            get { return showBuildingsBox; }
+        }
+
+        public UILabelledBox ClampNodeBox
+        {
+            get { return clampNodeBox; }
+        }
+
+        public UIDoubleButton SegmentButtons
+        {
+            get { return segmentButtons; }
+        }
+        #endregion
+
+        public override void Awake()
+        {
+            base.Awake();
+
+            titlePanel = AddUIComponent<UITitlePanel>();
+            gridSizeSlider = AddUIComponent<UISliderInput>();
+            gridAngleSlider = AddUIComponent<UISliderInput>();
+            showGridBox = AddUIComponent<UILabelledBox>();
+            showZonesBox = AddUIComponent<UILabelledBox>();
+            showFogBox = AddUIComponent<UILabelledBox>();
+            showBuildingsBox = AddUIComponent<UILabelledBox>();
+            clampNodeBox = AddUIComponent<UILabelledBox>();
+            segmentButtons = AddUIComponent<UIDoubleButton>();
+
+            #region "Bidirectional Binding"
+            gridSizeSlider.Slider.eventValueChanged += delegate(UIComponent sender, float value)
+            {
+                GridRenderManager.GridSize = value;
+            };
+
+            gridAngleSlider.Slider.eventValueChanged += delegate(UIComponent sender, float value)
+            {
+                GridRenderManager.Rotation = Quaternion.AngleAxis(value, new Vector3(0, 1, 0));
+            };
+
+            showGridBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
+            {
+                GridRenderManager.RenderGrid = value;
+            };
+
+            showZonesBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
+            {
+                TerrainManager.instance.RenderZones = value;
+            };
+
+            showFogBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
+            {
+                Utils.SetFogRender(value);
+                GridTrigger.RenderFog = value;
+            };
+
+            showBuildingsBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
+            {
+                Utils.SetBuildingRender(value);
+                GridTrigger.RenderBuildings = value;
+            };
+
+            segmentButtons.LeftButton.eventClick += delegate(UIComponent component, UIMouseEventParameter eventParam)
+            {
+                if (GridRenderManager.IsClamped)
+                {
+                    NetNode node = GridRenderManager.ClampedNode;
+                    int segmentCount = node.CountSegments();
+                    GridRenderManager.ClampedSegment++;
+                    if (GridRenderManager.ClampedSegment >= segmentCount)
+                    {
+                        GridRenderManager.ClampedSegment = 0;
+                    }
+
+                    NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
+                }
+
+            };
+
+            segmentButtons.RightButton.eventClick += delegate(UIComponent component, UIMouseEventParameter eventParam)
+            {
+                if (GridRenderManager.IsClamped)
+                {
+                    NetNode node = GridRenderManager.ClampedNode;
+                    int segmentCount = node.CountSegments();
+                    GridRenderManager.ClampedSegment--;
+                    if (GridRenderManager.ClampedSegment < 0)
+                    {
+                        GridRenderManager.ClampedSegment = segmentCount-1;
+                    }
+
+                    NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
+                }
+                    
+            };
+            #endregion
+
+        }
         public override void Start()
         {
             // Set visuals for panel
@@ -22,13 +151,6 @@ namespace RoadAssist
             this.height = 350;
             this.transformPosition = new Vector3(-1.0f, 0.9f);
 
-            
-            // Allow automated layout
-            this.autoLayoutDirection = LayoutDirection.Vertical;
-            this.autoLayoutStart = LayoutStart.TopLeft;
-            this.autoLayoutPadding = new RectOffset(0, 0, 10, 10);
-            //this.autoLayout = true;
-
             SetupControls();
         }
 
@@ -36,7 +158,6 @@ namespace RoadAssist
         {
 
             #region "Top Bar"
-            titlePanel = AddUIComponent<UITitlePanel>();
             titlePanel.Parent = this;
             titlePanel.relativePosition = Vector3.zero;
             titlePanel.IconSprite = "ToolbarIconRoads";
@@ -44,20 +165,58 @@ namespace RoadAssist
             #endregion
 
             #region "Sliders"
-            gridSizeSlider = AddUIComponent<UISliderInput>();
             gridSizeSlider.Parent = this;
             gridSizeSlider.relativePosition = new Vector3(0,50);
             gridSizeSlider.MinValue = 0f;
-            gridSizeSlider.MaxValue = 100f;
+            gridSizeSlider.MaxValue = 2000f;
+            gridSizeSlider.StepSize = 10f;
             gridSizeSlider.LabelText = "Grid Size";
-
-            gridAngleSlider = AddUIComponent<UISliderInput>();
+ 
             gridAngleSlider.Parent = this;
             gridAngleSlider.relativePosition = new Vector3(0, 100);
             gridAngleSlider.MinValue = 0f;
             gridAngleSlider.MaxValue = 360f;
+            gridAngleSlider.Slider.value = 0f;
             gridAngleSlider.LabelText = "Grid Angle";
             #endregion
+
+            #region "CheckBoxes"
+            showGridBox.Parent = this;
+            showGridBox.relativePosition = new Vector3(0, 150);
+            showGridBox.LabelText = "Show Grid:";
+ 
+            showZonesBox.Parent = this;
+            showZonesBox.relativePosition = new Vector3(210, 150);
+            showZonesBox.LabelText = "Show Zones:";
+       
+            showFogBox.Parent = this;
+            showFogBox.relativePosition = new Vector3(0, 200);
+            showFogBox.LabelText = "Show Fog:";
+            showFogBox.CheckBox.isChecked = true;
+
+            showBuildingsBox.Parent = this;
+            showBuildingsBox.relativePosition = new Vector3(210, 200);
+            showBuildingsBox.LabelText = "Show Buildings:";
+            showBuildingsBox.CheckBox.isChecked = true;
+
+            clampNodeBox.Parent = this;
+            clampNodeBox.relativePosition = new Vector3(0, 250);
+            clampNodeBox.LabelText = "Node Clamped:";
+            clampNodeBox.CheckBox.readOnly = true;
+            #endregion
+
+            #region "Segment buttons"
+            segmentButtons.Parent = this;
+            segmentButtons.relativePosition = new Vector3(0,300);
+            segmentButtons.LabelText = "Snap to segments:";
+            #endregion
+
+
+        }
+
+        protected override void OnVisibilityChanged()
+        {
+            base.OnVisibilityChanged();
 
         }
 
