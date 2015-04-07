@@ -17,11 +17,14 @@ namespace RoadAssist
     public class GridTrigger : ThreadingExtensionBase
     {
         private float angleRot = 0f;
+        private float moveSpeed = 1f;
+
         private static Mesh boxMesh;
 
         private static bool renderBuildings = true;
         private static bool renderFog = true;
 
+        #region "GetSets"
         public static bool RenderBuildings
         {
             get { return renderBuildings; }
@@ -39,14 +42,11 @@ namespace RoadAssist
             get { return boxMesh; }
             set { boxMesh = value; }
         }
+        #endregion
 
         public override void OnCreated(IThreading threading)
         {
-            boxMesh = CustomOverlayEffect.CreateBoxMesh();
-
-            //fogDensity = GameObject.FindObjectOfType<RenderProperties>().m_volumeFogDensity;
-
-            
+            boxMesh = CustomOverlayEffect.CreateBoxMesh();            
         }
 
         public override void OnUpdate(float realTimeDelta, float simulationTimeDelta)
@@ -123,7 +123,7 @@ namespace RoadAssist
                     {
                         NetNode node = NetManager.instance.m_nodes.m_buffer[(int)output.m_netNode];
                         GridRenderManager.ClampedNode = node;
-                        GridRenderManager.IsClamped = true;
+                        GridRenderManager.IsNodeClamped = true;
                         GridRenderManager.GridCenter = node.m_position;
 
                         RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
@@ -165,7 +165,7 @@ namespace RoadAssist
             #endregion
 
             #region"Snap to segment"
-            if (GridRenderManager.IsClamped)
+            if (GridRenderManager.IsNodeClamped)
             {
                 NetNode node = GridRenderManager.ClampedNode;
                 int segmentCount = node.CountSegments();
@@ -178,7 +178,10 @@ namespace RoadAssist
                     }
 
                     NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
-                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection, out angleRot);
+
+                    //RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
+                    //panel.GridAngleSlider.Slider.value = angleRot;
                 }
 
                 if (Input.GetKeyDown(KeyCode.Comma))
@@ -190,8 +193,10 @@ namespace RoadAssist
                     }
 
                     NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
-                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
-                    
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection, out angleRot);
+
+                    //RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
+                    //panel.GridAngleSlider.Slider.value = angleRot; 
                 }
             }
             #endregion
@@ -227,13 +232,20 @@ namespace RoadAssist
             }
             #endregion
 
-            #region"Move Grid"     
-            if (Input.GetKey(KeyCode.RightArrow) &! Event.current.alt)
+            #region"Move Grid"
+            
+            if (!Event.current.alt && (Input.GetKey(KeyCode.RightArrow) || Input.GetKey(KeyCode.LeftArrow) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.DownArrow)))
             {
-                // Remove clamp - notify panel.
-                if (GridRenderManager.IsClamped)
+                // Accelerate grid
+                if (moveSpeed <= 20f)
                 {
-                    GridRenderManager.IsClamped = false;
+                    moveSpeed += 0.1f;
+                }
+
+                // Remove clamp - notify panel.
+                if (GridRenderManager.IsNodeClamped)
+                {
+                    GridRenderManager.IsNodeClamped = false;
                     GridRenderManager.ClampedSegment = 0;
                     RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
                     panel.ClampNodeBox.CheckBox.isChecked = false;
@@ -241,67 +253,41 @@ namespace RoadAssist
                     panel.SegmentButtons.RightButton.Disable();
                 }
 
+                // Set rotation using camera.
                 Quaternion rotation = Utils.GetCameraRotationAboutYAxis(Singleton<RenderManager>.instance.CurrentCameraInfo);
-                Vector3 pushDirection = new Vector3(1, 0, 0);
-                pushDirection = rotation*pushDirection;
-                GridRenderManager.GridCenter += pushDirection * 20f;
+
+                if (Input.GetKey(KeyCode.RightArrow))
+                {
+                    Vector3 pushDirection = new Vector3(1, 0, 0);
+                    pushDirection = rotation * pushDirection;
+                    GridRenderManager.GridCenter += pushDirection * moveSpeed;
+                }
+
+                if (Input.GetKey(KeyCode.LeftArrow))
+                {
+                    Vector3 pushDirection = new Vector3(-1, 0, 0);
+                    pushDirection = rotation * pushDirection;
+                    GridRenderManager.GridCenter += pushDirection * moveSpeed;
+                }
+
+                if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    Vector3 pushDirection = new Vector3(0, 0, 1);
+                    pushDirection = rotation * pushDirection;
+                    GridRenderManager.GridCenter += pushDirection * moveSpeed;
+                }
+
+                if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    Vector3 pushDirection = new Vector3(0, 0, -1);
+                    pushDirection = rotation * pushDirection;
+                    GridRenderManager.GridCenter += pushDirection * moveSpeed;
+                }
             }
-
-            if (Input.GetKey(KeyCode.LeftArrow) & !Event.current.alt)
+            else
             {
-                // Remove clamp - notify panel.
-                if (GridRenderManager.IsClamped)
-                {
-                    GridRenderManager.IsClamped = false;
-                    GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
-                    panel.ClampNodeBox.CheckBox.isChecked = false;
-                    panel.SegmentButtons.LeftButton.Disable();
-                    panel.SegmentButtons.RightButton.Disable();
-                }
-
-                Quaternion rotation = Utils.GetCameraRotationAboutYAxis(Singleton<RenderManager>.instance.CurrentCameraInfo);
-                Vector3 pushDirection = new Vector3(-1, 0, 0);
-                pushDirection = rotation * pushDirection;
-                GridRenderManager.GridCenter += pushDirection * 20f;
-            }
-
-            if (Input.GetKey(KeyCode.UpArrow) & !Event.current.alt)
-            {
-                // Remove clamp - notify panel.
-                if (GridRenderManager.IsClamped)
-                {
-                    GridRenderManager.IsClamped = false;
-                    GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
-                    panel.ClampNodeBox.CheckBox.isChecked = false;
-                    panel.SegmentButtons.LeftButton.Disable();
-                    panel.SegmentButtons.RightButton.Disable();
-                }
-
-                Quaternion rotation = Utils.GetCameraRotationAboutYAxis(Singleton<RenderManager>.instance.CurrentCameraInfo);
-                Vector3 pushDirection = new Vector3(0, 0, 1);
-                pushDirection = rotation * pushDirection;
-                GridRenderManager.GridCenter += pushDirection * 20f;
-            }
-
-            if (Input.GetKey(KeyCode.DownArrow) & !Event.current.alt)
-            {
-                // Remove clamp - notify panel.
-                if (GridRenderManager.IsClamped)
-                {
-                    GridRenderManager.IsClamped = false;
-                    GridRenderManager.ClampedSegment = 0;
-                    RoadAssistPanel panel = GameObject.FindObjectOfType<RoadAssistPanel>();
-                    panel.ClampNodeBox.CheckBox.isChecked = false;
-                    panel.SegmentButtons.LeftButton.Disable();
-                    panel.SegmentButtons.RightButton.Disable();
-                }
-
-                Quaternion rotation = Utils.GetCameraRotationAboutYAxis(Singleton<RenderManager>.instance.CurrentCameraInfo);
-                Vector3 pushDirection = new Vector3(0, 0, -1);
-                pushDirection = rotation * pushDirection;
-                GridRenderManager.GridCenter += pushDirection * 20f;
+                //Default move speed
+                moveSpeed = 1f;
             }
             #endregion
         }
