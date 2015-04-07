@@ -19,13 +19,17 @@ namespace RoadAssist
 
         private static float gridGap = ZoneManager.ZONEGRID_CELL_SIZE/8;
         private static float gridSize = 1000f;
+        private static float gridAlpha = 0.2f;
 
         private static Quaternion rotation = Quaternion.identity;
         private static Vector3 gridCenter;
 
         private static NetNode clampedNode;
-        private static bool isClamped;
+        private static bool isNodeClamped;
         private static int clampedSegment = 0;
+
+        private static TerrainPatch clampedPatch;
+        private static bool isPatchClamped;
 
         #region "GetSets"
         public static bool RenderGrid
@@ -61,6 +65,19 @@ namespace RoadAssist
             set
             {
                 gridSize = value;
+            }
+        }
+
+        public static float GridAlpha
+        {
+            get 
+            {
+                return gridAlpha;
+            }
+
+            set
+            {
+                gridAlpha = value;
             }
         }
 
@@ -101,15 +118,15 @@ namespace RoadAssist
         }
 
 
-        public static bool IsClamped
+        public static bool IsNodeClamped
         {
             get
             {
-                return isClamped;
+                return isNodeClamped;
             }
             set
             {
-                isClamped = value;
+                isNodeClamped = value;
             }
         }
 
@@ -130,8 +147,8 @@ namespace RoadAssist
         {
             if (gridCenter == null)
             {
-                TerrainPatch patch = TerrainManager.instance.m_patches[40];
-                gridCenter = patch.m_bounds.center;
+                clampedPatch = TerrainManager.instance.m_patches[40];
+                gridCenter = clampedPatch.m_bounds.center;
             }
 
         }
@@ -232,11 +249,16 @@ namespace RoadAssist
                     Color color = (i % 5 == 0 ? Color.red : Color.white);
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
-
-
             }
         }
 
+        /// <summary>
+        /// Method using GridMesh - not implements as shader does not allow rotation
+        /// </summary>
+        /// <param name="cameraInfo"></param>
+        /// <param name="center"></param>
+        /// <param name="size"></param>
+        /// <param name="height"></param>
         private void RenderGridDeco(RenderManager.CameraInfo cameraInfo, Vector3 center, float size, float height)
         {
             Vector3 sizeVec = new Vector3(size, height, size);
@@ -247,11 +269,10 @@ namespace RoadAssist
                 Material deco = Singleton<GameAreaManager>.instance.m_properties.m_decorationMaterial;
                 //Material deco = Singleton<ZoneManager>.instance.m_zoneMaterial;
 
-                deco.SetVector(Shader.PropertyToID("_DecorationArea"), new Vector4(-size, -size, size, size));
+                deco.SetVector(Shader.PropertyToID("_DecorationArea"), new Vector4(center.x-size, center.z-size, center.x + size, center.z + size));
                 deco.SetFloat(Shader.PropertyToID("_DecorationAlpha"), 1.0f);
 
                 CustomOverlayEffect.DrawEffect(cameraInfo, deco, 0, gridBounds);
-                //RenderManager.instance.OverlayEffect.DrawEffect(cameraInfo, deco, 0, gridBounds);
             }
         }
 
@@ -286,6 +307,7 @@ namespace RoadAssist
                     quad.c = center + xVec * (size / 2) + zVec * (i * gridGap - (size / 2));
                     quad.d = center + xVec * (size / 2) + zVec * (i * gridGap - (size / 2));
                     Color color = (i % 5 == 0 ? Color.red : Color.white);
+                    color.a = gridAlpha;
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
 
@@ -298,6 +320,7 @@ namespace RoadAssist
                     quad.d = center + zVec * (size / 2) + xVec * (i * gridGap - (size / 2));
 
                     Color color = (i % 5 == 0 ? Color.red : Color.white);
+                    color.a = gridAlpha;
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
 
@@ -309,13 +332,14 @@ namespace RoadAssist
         {
             renderGrid = false;
             gridSize = 1000f;
+            gridAlpha = 0.2f;
 
             rotation = Quaternion.identity;
 
             TerrainPatch patch = TerrainManager.instance.m_patches[40];
             gridCenter = patch.m_bounds.center;
 
-            isClamped = false;
+            isNodeClamped = false;
             clampedSegment = 0;
         }
     }
