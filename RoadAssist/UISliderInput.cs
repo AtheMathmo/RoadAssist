@@ -110,11 +110,7 @@ namespace RoadAssist
                     }
                     SliderValue = num;
                 }
-                else
-                {
-                    textField.text = SliderValue.ToString();
-                }
-
+                textField.text = SliderValue.ToString();
             };
         }
         public override void Start()
