@@ -55,20 +55,21 @@ namespace RoadAssist
             return null;
         }
 
-        public static Quaternion GetRotationMapBetweenVecs(Vector3 referenceVec, Vector3 rotatedVec)
+        public static Quaternion GetRotationMapBetweenVecs(Vector3 referenceVec, Vector3 rotatedVec, out float angle)
         {
             Vector3 axisVec = referenceVec;
             axisVec.Normalize();
             rotatedVec.Normalize();
 
             // Find angle between the vectors
-            float angle = (float)Math.Acos((double)Vector3.Dot(axisVec, rotatedVec));
+            angle = (float)Math.Acos((double)Vector3.Dot(axisVec, rotatedVec));
             Vector3 axisOfRotation = Vector3.Cross(axisVec, rotatedVec);
 
             axisOfRotation.Normalize();
 
             // Convert to degrees
             angle = (float)(angle * 180 / Math.PI);
+
 
             return Quaternion.AngleAxis(angle, axisOfRotation);
         }
