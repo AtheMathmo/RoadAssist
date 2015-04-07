@@ -96,21 +96,22 @@ namespace RoadAssist
             #endregion
 
             #region "RayCast"
-            if (Input.GetMouseButtonDown(0))
-            {
-                Debug.Log("Left mouse clicked");
-                
+            if (Input.GetMouseButtonDown(0) && !ToolsModifierControl.toolController.IsInsideUI)
+            {                
+                // Reflection to get RayCast method from ToolBase.
                 MethodInfo rayCast = Utils.GetPrivateMethod(typeof(ToolBase), "RayCast");
 
+                // Gets mouse ray
                 Vector3 mousePosition = Input.mousePosition;
                 Ray mouseRay = Camera.main.ScreenPointToRay(mousePosition);
                 float mouseRayLength = Camera.main.farClipPlane;
 
+                // Sets parameters for the RayCast
                 ToolBase.RaycastInput input = new ToolBase.RaycastInput(mouseRay, mouseRayLength);
-                input.m_ignoreTerrain = true;
+                input.m_ignoreTerrain = false;
                 input.m_ignoreNodeFlags = NetNode.Flags.None;
 
-
+                // Invoking method.
                 object[] parameters = new object[] {input, null};
                 object result = rayCast.Invoke(null, parameters);
 
@@ -118,8 +119,16 @@ namespace RoadAssist
                 if ((bool) result)
                 {
                     ToolBase.RaycastOutput output = (ToolBase.RaycastOutput) parameters[1];
-                    Debug.Log(output.m_netNode);
-                    if ((int)output.m_netNode != 0)
+
+                    // Get patch inside click.
+                    TerrainPatch patch;
+                    if (GridRenderManager.gridMethod.Equals(GridRenderManager.GridMethod.WholePatch) && Utils.FindPatchByPoint(output.m_hitPos, out patch))
+                    {
+                        GridRenderManager.ClampedPatch = patch;
+                    }
+
+                    // Get node that was clicked
+                    if (GridRenderManager.gridMethod.Equals(GridRenderManager.GridMethod.ManualLines) && (int)output.m_netNode != 0)
                     {
                         NetNode node = NetManager.instance.m_nodes.m_buffer[(int)output.m_netNode];
                         GridRenderManager.ClampedNode = node;

@@ -98,6 +98,22 @@ namespace RoadAssist
             return Quaternion.AngleAxis(angle, axisOfRotation);
         }
 
+        public static bool FindPatchByPoint(Vector3 point, out TerrainPatch patch)
+        {
+            TerrainPatch[] patchArray = TerrainManager.instance.m_patches;
+
+            for (int i = 0; i < patchArray.Length; i++ )
+            {
+                if (patchArray[i].m_bounds.Contains(point))
+                {
+                    patch = patchArray[i];
+                    return true;
+                }
+            }
+            patch = null;
+            return false;
+        }
+
         public static T GetPrivateVariable<T>(object obj, string fieldName)
         {
             return (T)obj.GetType().GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance).GetValue(obj);

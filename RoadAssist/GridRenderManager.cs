@@ -31,6 +31,14 @@ namespace RoadAssist
         private static TerrainPatch clampedPatch;
         private static bool isPatchClamped;
 
+        public enum GridMethod
+        {
+            ManualLines,
+            WholePatch
+        };
+
+        public static GridMethod gridMethod = GridMethod.ManualLines;
+
         #region "GetSets"
         public static bool RenderGrid
         {
@@ -141,16 +149,27 @@ namespace RoadAssist
                 clampedSegment = value;
             }
         }
+
+        public static TerrainPatch ClampedPatch
+        {
+            get
+            {
+                return clampedPatch;
+            }
+            set
+            {
+                clampedPatch = value;
+            }
+        }
         #endregion
 
         public void BeginOverlay(RenderManager.CameraInfo cameraInfo)
         {
-            if (gridCenter == null)
+            if (clampedPatch == null)
             {
                 clampedPatch = TerrainManager.instance.m_patches[40];
                 gridCenter = clampedPatch.m_bounds.center;
             }
-
         }
 
         public void BeginRendering(RenderManager.CameraInfo cameraInfo)
@@ -167,10 +186,16 @@ namespace RoadAssist
             
             if (renderGrid)
             {
-                
-                //RenderGridDeco(cameraInfo, gridCenter, gridSize, 100f);
-                //RenderPatchGrid(cameraInfo, patch);
-                RenderGridManual(cameraInfo, gridCenter, gridSize, 100f);
+                switch (gridMethod)
+                {
+                    case GridMethod.ManualLines:
+                    default:
+                        RenderGridManual(cameraInfo, gridCenter, gridSize, 100f);
+                        return;
+                    case GridMethod.WholePatch:
+                        RenderPatchGrid(cameraInfo, clampedPatch);
+                        return;
+                }
             }
 
         }
@@ -220,14 +245,13 @@ namespace RoadAssist
                 Vector3 xVec = new Vector3(1f, 0f, 0f);
                 Vector3 zVec = new Vector3(0f, 0f, 1f);
 
-                xVec = rotation * xVec;
-                zVec = rotation * zVec;
+                //xVec = rotation * xVec;
+                //zVec = rotation * zVec;
 
-                // Currently only draws a square - but could easily change shape by changing size in each direction.
                 int xLineCount = (int)Math.Floor(bounds.size.x / gridGap);
                 int zLineCount = (int)Math.Floor(bounds.size.z / gridGap);
 
-                for (int i = 0; i < xLineCount; i++)
+                for (int i = 0; i <= xLineCount; i++)
                 {
                     Quad3 quad = default(Quad3);
                     quad.a = bounds.center - xVec * bounds.extents.x + zVec * (i * gridGap - bounds.extents.z);
@@ -235,10 +259,11 @@ namespace RoadAssist
                     quad.c = bounds.center + xVec * bounds.extents.x + zVec * (i * gridGap - bounds.extents.z);
                     quad.d = bounds.center + xVec * bounds.extents.x + zVec * (i * gridGap - bounds.extents.z);
                     Color color = (i % 5 == 0 ? Color.red : Color.white);
+                    color.a = gridAlpha;
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
 
-                for (int i = 0; i < zLineCount; i++)
+                for (int i = 0; i <= zLineCount; i++)
                 {
                     Quad3 quad = default(Quad3);
                     quad.a = bounds.center - zVec * bounds.extents.x + xVec * (i * gridGap - bounds.extents.z);
@@ -247,6 +272,7 @@ namespace RoadAssist
                     quad.d = bounds.center + zVec * bounds.extents.x + xVec * (i * gridGap - bounds.extents.z);
 
                     Color color = (i % 5 == 0 ? Color.red : Color.white);
+                    color.a = gridAlpha;
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
             }
@@ -299,7 +325,7 @@ namespace RoadAssist
                 int xLineCount = (int)Math.Floor(size / gridGap);
                 int zLineCount = (int)Math.Floor(size / gridGap);
 
-                for (int i = 0; i < xLineCount; i++)
+                for (int i = 0; i <= xLineCount; i++)
                 {
                     Quad3 quad = default(Quad3);
                     quad.a = center - xVec * (size / 2) + zVec * (i * gridGap - (size / 2));
@@ -311,7 +337,7 @@ namespace RoadAssist
                     RenderManager.instance.OverlayEffect.DrawQuad(cameraInfo, color, quad, -1f, 1025f, false, true);
                 }
 
-                for (int i = 0; i < zLineCount; i++)
+                for (int i = 0; i <= zLineCount; i++)
                 {
                     Quad3 quad = default(Quad3);
                     quad.a = center - zVec * (size / 2) + xVec * (i * gridGap - (size / 2));
@@ -336,8 +362,9 @@ namespace RoadAssist
 
             rotation = Quaternion.identity;
 
-            TerrainPatch patch = TerrainManager.instance.m_patches[40];
-            gridCenter = patch.m_bounds.center;
+
+            clampedPatch = TerrainManager.instance.m_patches[40];
+            gridCenter = clampedPatch.m_bounds.center;
 
             isNodeClamped = false;
             clampedSegment = 0;

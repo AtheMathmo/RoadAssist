@@ -20,6 +20,7 @@ namespace RoadAssist
         private UILabelledBox showBuildingsBox;
         private UILabelledBox showZonesBox;
         private UILabelledBox clampNodeBox;
+        private UILabelledBox clampPatchBox;
         private UIDoubleButton segmentButtons;
 
         #region "Component access"
@@ -78,6 +79,7 @@ namespace RoadAssist
             showFogBox = AddUIComponent<UILabelledBox>();
             showBuildingsBox = AddUIComponent<UILabelledBox>();
             clampNodeBox = AddUIComponent<UILabelledBox>();
+            clampPatchBox = AddUIComponent<UILabelledBox>();
             segmentButtons = AddUIComponent<UIDoubleButton>();
 
             #region "Bidirectional Binding"
@@ -116,6 +118,22 @@ namespace RoadAssist
             {
                 Utils.SetBuildingRender(value);
                 GridTrigger.RenderBuildings = value;
+            };
+
+            clampPatchBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
+            {
+                GridRenderManager.gridMethod = (value ? GridRenderManager.GridMethod.WholePatch : GridRenderManager.GridMethod.ManualLines);
+
+                GridRenderManager.IsNodeClamped = false;
+                GridRenderManager.ClampedSegment = 0;
+                ClampNodeBox.CheckBox.isChecked = false;
+                SegmentButtons.LeftButton.Disable();
+                SegmentButtons.RightButton.Disable();
+
+                if (!value)
+                {
+                    GridRenderManager.GridCenter = GridRenderManager.ClampedPatch.m_bounds.center;
+                }
             };
 
             segmentButtons.LeftButton.eventClick += delegate(UIComponent component, UIMouseEventParameter eventParam)
@@ -240,6 +258,10 @@ namespace RoadAssist
             clampNodeBox.relativePosition = new Vector3(0, yVal);
             clampNodeBox.LabelText = "Node Clamped:";
             clampNodeBox.CheckBox.readOnly = true;
+
+            clampPatchBox.Parent = this;
+            clampPatchBox.relativePosition = new Vector3(210, yVal);
+            clampPatchBox.LabelText = "Tile Clamped:";
 
             yVal += 50;
             #endregion
