@@ -13,6 +13,7 @@ namespace RoadAssist
 
         private UISliderInput gridSizeSlider;
         private UISliderInput gridAngleSlider;
+        private UISliderInput gridAlphaSlider;
 
         private UILabelledBox showGridBox;
         private UILabelledBox showFogBox;
@@ -67,8 +68,11 @@ namespace RoadAssist
             base.Awake();
 
             titlePanel = AddUIComponent<UITitlePanel>();
+
             gridSizeSlider = AddUIComponent<UISliderInput>();
             gridAngleSlider = AddUIComponent<UISliderInput>();
+            gridAlphaSlider = AddUIComponent<UISliderInput>();
+
             showGridBox = AddUIComponent<UILabelledBox>();
             showZonesBox = AddUIComponent<UILabelledBox>();
             showFogBox = AddUIComponent<UILabelledBox>();
@@ -85,6 +89,11 @@ namespace RoadAssist
             gridAngleSlider.Slider.eventValueChanged += delegate(UIComponent sender, float value)
             {
                 GridRenderManager.Rotation = Quaternion.AngleAxis(value, new Vector3(0, 1, 0));
+            };
+
+            gridAlphaSlider.Slider.eventValueChanged += delegate(UIComponent sender, float value)
+            {
+                GridRenderManager.GridAlpha = value;
             };
 
             showGridBox.CheckBox.eventCheckChanged += delegate(UIComponent sender, bool value)
@@ -111,7 +120,7 @@ namespace RoadAssist
 
             segmentButtons.LeftButton.eventClick += delegate(UIComponent component, UIMouseEventParameter eventParam)
             {
-                if (GridRenderManager.IsClamped)
+                if (GridRenderManager.IsNodeClamped)
                 {
                     NetNode node = GridRenderManager.ClampedNode;
                     int segmentCount = node.CountSegments();
@@ -122,14 +131,16 @@ namespace RoadAssist
                     }
 
                     NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
-                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
+                    float angle;
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection, out angle);
+                    //GridAngleSlider.Slider.value = angle;
                 }
 
             };
 
             segmentButtons.RightButton.eventClick += delegate(UIComponent component, UIMouseEventParameter eventParam)
             {
-                if (GridRenderManager.IsClamped)
+                if (GridRenderManager.IsNodeClamped)
                 {
                     NetNode node = GridRenderManager.ClampedNode;
                     int segmentCount = node.CountSegments();
@@ -140,7 +151,9 @@ namespace RoadAssist
                     }
 
                     NetSegment segment = NetManager.instance.m_segments.m_buffer[node.GetSegment(GridRenderManager.ClampedSegment)];
-                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection);
+                    float angle;
+                    GridRenderManager.Rotation = Utils.GetRotationMapBetweenVecs(new Vector3(1, 0, 0), segment.m_startDirection, out angle);
+                    //GridAngleSlider.Slider.value = angle;
                 }
                     
             };
@@ -152,7 +165,7 @@ namespace RoadAssist
             // Set visuals for panel
             this.backgroundSprite = "MenuPanel2";
             this.width = 450;
-            this.height = 350;
+            this.height = 400;
             this.transformPosition = new Vector3(-1.3f, 0.9f);
 
             SetupControls();
@@ -160,7 +173,6 @@ namespace RoadAssist
 
         private void SetupControls()
         {
-
             #region "Top Bar"
             titlePanel.Parent = this;
             titlePanel.relativePosition = Vector3.zero;
@@ -169,50 +181,72 @@ namespace RoadAssist
             #endregion
 
             #region "Sliders"
+            int yVal = 50;
+
             gridSizeSlider.Parent = this;
-            gridSizeSlider.relativePosition = new Vector3(0,50);
+            gridSizeSlider.relativePosition = new Vector3(0, yVal);
             gridSizeSlider.MinValue = 0f;
             gridSizeSlider.MaxValue = 2000f;
             gridSizeSlider.StepSize = 10f;
             gridSizeSlider.LabelText = "Grid Size";
             gridSizeSlider.SliderValue = 1000f;
- 
+
+            yVal += 50;
+
             gridAngleSlider.Parent = this;
-            gridAngleSlider.relativePosition = new Vector3(0, 100);
+            gridAngleSlider.relativePosition = new Vector3(0, yVal);
             gridAngleSlider.MinValue = 0f;
             gridAngleSlider.MaxValue = 360f;
             gridAngleSlider.SliderValue = 0f;
             gridAngleSlider.LabelText = "Grid Angle";
+
+            yVal += 50;
+
+            gridAlphaSlider.Parent = this;
+            gridAlphaSlider.relativePosition = new Vector3(0, yVal);
+            gridAlphaSlider.MinValue = 0f;
+            gridAlphaSlider.MaxValue = 1f;
+            gridAlphaSlider.StepSize = 0.1f;
+            gridAlphaSlider.SliderValue = 0.2f;
+            gridAlphaSlider.LabelText = "Grid Alpha";
+
+            yVal += 50;
             #endregion
 
             #region "CheckBoxes"
             showGridBox.Parent = this;
-            showGridBox.relativePosition = new Vector3(0, 150);
+            showGridBox.relativePosition = new Vector3(0, yVal);
             showGridBox.LabelText = "Show Grid:";
  
             showZonesBox.Parent = this;
-            showZonesBox.relativePosition = new Vector3(210, 150);
+            showZonesBox.relativePosition = new Vector3(210, yVal);
             showZonesBox.LabelText = "Show Zones:";
-       
+
+            yVal += 50;
+
             showFogBox.Parent = this;
-            showFogBox.relativePosition = new Vector3(0, 200);
+            showFogBox.relativePosition = new Vector3(0, yVal);
             showFogBox.LabelText = "Show Fog:";
             showFogBox.CheckBox.isChecked = true;
 
             showBuildingsBox.Parent = this;
-            showBuildingsBox.relativePosition = new Vector3(210, 200);
+            showBuildingsBox.relativePosition = new Vector3(210, yVal);
             showBuildingsBox.LabelText = "Show Buildings:";
             showBuildingsBox.CheckBox.isChecked = true;
 
+            yVal += 50;
+
             clampNodeBox.Parent = this;
-            clampNodeBox.relativePosition = new Vector3(0, 250);
+            clampNodeBox.relativePosition = new Vector3(0, yVal);
             clampNodeBox.LabelText = "Node Clamped:";
             clampNodeBox.CheckBox.readOnly = true;
+
+            yVal += 50;
             #endregion
 
             #region "Segment buttons"
             segmentButtons.Parent = this;
-            segmentButtons.relativePosition = new Vector3(0,300);
+            segmentButtons.relativePosition = new Vector3(0,yVal);
             segmentButtons.LabelText = "Snap to segments:";
             #endregion
 
