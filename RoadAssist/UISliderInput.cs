@@ -86,30 +86,35 @@ namespace RoadAssist
 
             this.slider.eventValueChanged += delegate(UIComponent sender, float value)
             {
-                //value = slider.value;
-                textField.text = Mathf.CeilToInt(value).ToString();
+                string format = "{0:0}";
+                if (StepSize < 1)
+                {
+                    format = "{0:0.0}";
+                }
+                textField.text = String.Format(format,value);
             };
 
             // Check if the text field changed, and update the slider value.
             this.textField.eventTextSubmitted += delegate(UIComponent sender, string s)
             {
-                int num;
-                if (int.TryParse(s, out num))
+                float num;
+                if (float.TryParse(s, out num))
                 {
-                    if (num > slider.maxValue)
+                    if (num > MaxValue)
                     {
-                        textField.text = slider.maxValue.ToString();
+                        textField.text = MaxValue.ToString();
                     }
-                    else if (num < slider.minValue)
+                    else if (num < MinValue)
                     {
-                        textField.text = slider.minValue.ToString();
+                        textField.text = MinValue.ToString();
                     }
-                    slider.value = num;
+                    SliderValue = num;
                 }
                 else
                 {
-                    textField.text = slider.value.ToString();
+                    textField.text = SliderValue.ToString();
                 }
+
             };
         }
         public override void Start()
@@ -160,7 +165,14 @@ namespace RoadAssist
             textField.normalBgSprite = "TextFieldPanel";
             textField.hoveredBgSprite = "TextFieldPanelHovered";
             textField.focusedBgSprite = "TextFieldUnderline";
-            textField.text = slider.value.ToString("0.");
+
+            string format = "{0:0}";
+            if (StepSize < 1)
+            {
+                format = "{0:0.0}";
+            }
+            textField.text = String.Format(format, SliderValue);
+
             textField.isInteractive = true;
             textField.enabled = true;
             textField.readOnly = false;
